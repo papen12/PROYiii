@@ -1,0 +1,48 @@
+name: CI/CD Deploy with Docker
+
+on:
+  push:
+    branches:
+      - dev    
+  workflow_dispatch:
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+
+    env:
+      DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKER_PASS: ${{ secrets.DOCKERHUB_TOKEN }}
+      IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/imageFinal   
+
+    steps:
+
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Ejecutar pruebas (Vitest)
+        run: |
+          echo "Iniciando pruebas automatizadas..."
+          npx vitest run --reporter=dot
+
+      - name: Login a Docker Hub
+        run: echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+
+      - name: Construir imagen Docker
+        run: |
+          docker build -t $IMAGE_NAME:latest .
+
+      - name: Push a Docker Hub
+        run: |
+          docker push $IMAGE_NAME:latest
+
+      - name: Mensaje final
+        run: echo "🚀 Imagen enviada a Docker Hub exitosamente"
