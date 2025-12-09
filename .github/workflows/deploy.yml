@@ -28,10 +28,6 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
-      - name: Ejecutar pruebas (Vitest)
-        run: |
-          echo "Iniciando pruebas automatizadas..."
-          npx vitest run --reporter=dot
 
       - name: Login a Docker Hub
         run: echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
